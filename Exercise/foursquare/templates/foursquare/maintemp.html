@@ -1,0 +1,91 @@
+{% load staticfiles %}
+<html>
+<head>
+    <title>Ultimate Client</title>
+    <link rel="stylesheet" href="{% static 'css/fs.css' %}">
+
+</head>
+<body>
+{{ form_box.errors }}
+{{ form_box.non_field_errors }}
+    <h2>The Ultimate FourSquare Client </h2>
+    <div class="main-form">
+        <form action="" method="GET">
+            {% csrf_token %}
+            {{form_box.as_p}}
+            <!--<input type="text" name="food_text"  />
+            <input  type="text" name="location_text" value="Location"/>-->
+            <input type="submit" name="submit" value="search" />
+        </form>
+    </div>
+    <div class="results">
+        <p style="text-align:center"><b>Results</b> </p>
+        
+       -<table id="data" style="width:100%; ">
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Phone Number
+            </th>
+            <th>
+                Checkins Count
+            </th>
+        </tr>
+           {% for k in venue_list %}
+        <tr>
+            <td style="text-align:center;padding:10px;width:30%">
+                <div class="tablediv" >
+                        {{k.name}}
+                </div>
+            </td>
+            <td style="text-align:center;width:30%" >
+                <div class="tablediv">
+                        {{k.phone_number}}
+                </div>
+            </td>
+            <td style="text-align:center;width:30%">
+                <div class="tablediv">
+                        {{k.checkin_count}}
+                </div>
+            </td>
+        </tr>
+            {% endfor %}
+        </table>
+{% if venue_list %}
+        <div style="margin-left:40%"  class="pagination">
+            {% if previous_page in page_list %}
+                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">&laquo;</a>
+                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">{{previous_page}}</a>
+            {% endif %}
+                <a  style="pointer-events: none; cursor: default;" href="" class="inactiveLink">{{current_page}}</a>
+             <span style="float:right;margin-top:30px" class="current">
+                Page {{ current_page }} of {{ total_page_numbers }}.
+             </span>
+            {% if next_page in page_list %}
+                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{next_page}}</a>
+                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">&raquo;</a>
+            <!-- <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">..</a>
+                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{last_page}}</a>-->
+            {% endif %}
+        </div>
+{% endif %}
+
+    </div>
+    <div class="recent_searches">
+        <b><p style="text-align:center">Previous Searches</p></b>
+        <br />
+        {% if recent_searches %}
+        <ul>
+            {% for search in recent_searches %}
+            <li> <a href="?food={{search.food}}&location={{search.location}}">{{search.food}} in {{search.location}}</a> </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="text-align:center">No search has been made.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>
