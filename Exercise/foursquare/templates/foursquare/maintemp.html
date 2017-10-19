@@ -54,9 +54,16 @@
             {% endfor %}
         </table>
 {% if venue_list %}
+        <p>Total Venue Count: {{total_venue_count}}</p>
         <div style="margin-left:40%"  class="pagination">
-            <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{offset}}">Next</a>
 
+
+            {% if po_exists %}
+            <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{prev_offset}}">Previous</a>
+            {% endif %}
+            {% if no_exists %}
+            <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{next_offset}}">Next</a>
+            {% endif %}
             <!--{% if previous_page in page_list %}-->
                 <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">&laquo;</a>-->
                 <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">{{previous_page}}</a>-->

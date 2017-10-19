@@ -11,9 +11,9 @@ def search(request):
     form = LocationForm(request.GET)
     if form.is_valid():
             print("form is valid")
-            food = request.GET.get('food', '')
-            location = request.GET.get('location', '')
-
+            cd = form.cleaned_data
+            food = cd['food']
+            location = cd['location']
             print(food, location)
             offset = request.GET.get('offset')
             if offset is None:
@@ -43,18 +43,31 @@ def search(request):
             print(venue_list)
             print("venue list length: " + str(len(venue_list)))
             sorted_list = sorted(venue_list, key=itemgetter('checkin_count'), reverse=True)
+            po_exists = False  # previous offset
+            no_exists = False  # next offset
+            next_offset = int(offset) + 10
+            prev_offset = int(offset) - 10
             try:
                 total_results = data['response']['totalResults']
             except KeyError:
                 total_results = 0
             if total_results != 0:
-                current_search = save_to_database(food, location)
+                current_search = get_and_save_the_obj(food, location)
+                if int(offset) > 0:  # previous link exists after first page
+                    po_exists = True
+                if int(offset) < total_results:  # next link exits until its last page
+                    no_exists = True
             context = {
                 'venue_list': sorted_list,
                 'recent_searches': recent_searches,
                 'form_box': form,
-                'offset': int(offset)+10,
+                'next_offset': next_offset,
+                'no_exists': no_exists,
+                'prev_offset': prev_offset,
+                'po_exists': po_exists,
                 'current_search': current_search,
+                'total_venue_count': total_results,
+
             }
             return render(request, 'foursquare/maintemp.html', context)
     else:
@@ -81,7 +94,7 @@ def get_recent_searches():
     return LocationSearch.objects.order_by('-search_date')[:10]
 
 
-def save_to_database(food, location):
+def get_and_save_the_obj(food, location):
     # search for the object in database, if objects doesn't exist,
     # then create it, finally change its search_date to now,
     # so it will appear on top of the recent_searches list.
