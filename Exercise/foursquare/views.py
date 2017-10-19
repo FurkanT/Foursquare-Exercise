@@ -38,35 +38,23 @@ def search(request):
                     if phone_number is None:
                         phone_number = 'N/A'
                     check_in_count = groups.get('venue', {}).get('stats').get('checkinsCount')
-                    # venue = {'name': name, 'phone_number': phone_number, 'checkin_count': check_in_count}
-                    # venue_list.append(venue)
                     venue_list = get_venue_list(venue_list, name, phone_number, check_in_count)
             print("selam")
             print(venue_list)
-            venue_list_length = len(venue_list)
-            print("venue list length: " + str(venue_list_length))
+            print("venue list length: " + str(len(venue_list)))
             sorted_list = sorted(venue_list, key=itemgetter('checkin_count'), reverse=True)
-
             try:
                 total_results = data['response']['totalResults']
             except KeyError:
                 total_results = 0
-                return total_results
             if total_results != 0:
                 current_search = save_to_database(food, location)
-
             context = {
                 'venue_list': sorted_list,
                 'recent_searches': recent_searches,
                 'form_box': form,
                 'offset': int(offset)+10,
                 'current_search': current_search,
-                # 'previous_page': previous_page,
-                # 'next_page': next_page,
-                # 'current_page': current_page,
-                # 'total_page_numbers': total_page_numbers,
-                # 'page_list': page_list,
-                # 'last_page': last_page,
             }
             return render(request, 'foursquare/maintemp.html', context)
     else:
@@ -141,3 +129,12 @@ def save_to_database(food, location):
             # print('Previous page:', str(previous_page))
             # print('Current page:', str(current_page))
             # print('Next page:', str(next_page))
+# venue = {'name': name, 'phone_number': phone_number, 'checkin_count': check_in_count}
+                    # venue_list.append(venue)
+
+        # 'previous_page': previous_page,
+        # 'next_page': next_page,
+        # 'current_page': current_page,
+        # 'total_page_numbers': total_page_numbers,
+        # 'page_list': page_list,
+        # 'last_page': last_page,
