@@ -7,87 +7,86 @@ from django.utils import timezone
 
 
 def search(request):
+
     recent_searches = get_recent_searches()
     form = LocationForm(request.GET)
-    if form.is_valid():
-            print("form is valid")
-            cd = form.cleaned_data
-            food = cd['food']
-            location = cd['location']
-            print(food, location)
-            offset = request.GET.get('offset')
-            if offset is None:
-                offset = 0
-            url = 'https://api.foursquare.com/v2/venues/explore'
-            params = dict(
-                client_id='V131V0IPODZOAI4DH0TXB0W1VF4R1QCAHASGHJI35D3KJLWK',
-                client_secret='L5RZFRA1K2KPH33H12BFD3MECOJKEBIJSLP14KXYRYW3A5AF',
-                v='20170801',
-                near=location,
-                query=food,
-                limit=10,
-                offset=offset,
-            )
-            resp = requests.get(url=url, params=params)
-            data = resp.json()
-            venue_list = []
-            for item in data['response']['groups']:
-                for groups in item['items']:
-                    name = groups.get('venue').get('name')
-                    phone_number = groups.get('venue', {}).get('contact').get('formattedPhone')
-                    if phone_number is None:
-                        phone_number = 'N/A'
-                    check_in_count = groups.get('venue', {}).get('stats').get('checkinsCount')
-                    venue_list = get_venue_list(venue_list, name, phone_number, check_in_count)
-            print("selam")
-            print(venue_list)
-            print("venue list length: " + str(len(venue_list)))
-            sorted_list = sorted(venue_list, key=itemgetter('checkin_count'), reverse=True)
-            po_exists = False  # previous offset
-            no_exists = False  # next offset
-            next_offset = int(offset) + 10
-            prev_offset = int(offset) - 10
-            try:
-                total_results = data['response']['totalResults']
-            except KeyError:
-                total_results = 0
-            if total_results != 0:
-                current_search = get_and_save_the_obj(food, location)
-                if int(offset) > 0:  # previous link exists after first page
-                    po_exists = True
-                if int(offset) < total_results:  # next link exits until its last page
-                    no_exists = True
-            context = {
-                'venue_list': sorted_list,
-                'recent_searches': recent_searches,
-                'form_box': form,
-                'next_offset': next_offset,
-                'no_exists': no_exists,
-                'prev_offset': prev_offset,
-                'po_exists': po_exists,
-                'current_search': current_search,
-                'total_venue_count': total_results,
-
-            }
-            return render(request, 'foursquare/maintemp.html', context)
-    else:
+    if not form.is_valid():
         form = LocationForm()
         context = {
             'recent_searches': recent_searches,
             'form_box': form,
         }
         return render(request, 'foursquare/maintemp.html', context)
+    else:
+        print("form is valid")
+        cd = form.cleaned_data
+        food = cd['food']
+        location = cd['location']
+        print(food, location)
+        offset = request.GET.get('offset')
+        if offset is None:
+            offset = 0
+        data = get_response(food, location, offset)
+        venue_list = get_venue_list(data)
+        sorted_list = get_sorted_list(venue_list)
+        po_exists = False  # previous offset
+        no_exists = False  # next offset
+        next_offset = int(offset) + 10
+        prev_offset = int(offset) - 10
+        total_results = get_total_results(data)
+        if total_results != 0:
+            current_search = get_and_save_the_obj(food, location)
+            if int(offset) > 0:  # previous link exists after first page
+                po_exists = True
+            if int(offset) < total_results:  # next link exits until its last page
+                no_exists = True
+        context = {
+            'venue_list': sorted_list,
+            'recent_searches': recent_searches,
+            'form_box': form,
+            'next_offset': next_offset,
+            'no_exists': no_exists,
+            'prev_offset': prev_offset,
+            'po_exists': po_exists,
+            'current_search': current_search,
+            'total_venue_count': total_results,
+
+        }
+        return render(request, 'foursquare/maintemp.html', context)
 
 
-def get_venue_list(venue_list, name, phone_number, check_in_count):
+def get_sorted_list(venue_list):
+    return sorted(venue_list, key=itemgetter('checkin_count'), reverse=True)
 
-    venue_list.append(get_venue_dict(name, phone_number, check_in_count))
+
+def get_total_results(data):
+    try:
+        total_results = data['response']['totalResults']
+    except KeyError:
+        total_results = 0
+    return total_results
+
+
+def get_venue_list(data):
+    venue_list = []
+    for item in data['response']['groups']:
+        for groups in item['items']:
+            name = groups.get('venue').get('name')
+            phone_number = set_phone_number(groups)
+            check_in_count = groups.get('venue', {}).get('stats').get('checkinsCount')
+            venue = {'name': name, 'phone_number': phone_number, 'checkin_count': check_in_count}
+            venue_list.append(venue)
+    print("selam")
+    print(venue_list)
+    print("venue list length: " + str(len(venue_list)))
     return venue_list
 
 
-def get_venue_dict(name, phone_number, check_in_count):
-    venue = {'name': name, 'phone_number': phone_number, 'checkin_count': check_in_count}
-    return venue
+def set_phone_number(groups):
+    phone_number = groups.get('venue', {}).get('contact').get('formattedPhone')
+    if phone_number is None:
+        phone_number = 'N/A'
+    return phone_number
 
 
 def get_recent_searches():
@@ -116,6 +115,20 @@ def get_and_save_the_obj(food, location):
             print("recent searches: " + obj.food + " " + obj.location)
         return search_obj
 
+
+def get_response(food, location, offset):
+    url = 'https://api.foursquare.com/v2/venues/explore'
+    params = dict(
+        client_id='V131V0IPODZOAI4DH0TXB0W1VF4R1QCAHASGHJI35D3KJLWK',
+        client_secret='L5RZFRA1K2KPH33H12BFD3MECOJKEBIJSLP14KXYRYW3A5AF',
+        v='20170801',
+        near=location,
+        query=food,
+        limit=10,
+        offset=offset,
+    )
+    resp = requests.get(url=url, params=params)
+    return resp.json
 
 
             # page_list = []
