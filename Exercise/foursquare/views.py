@@ -60,6 +60,7 @@ def get_sorted_list(venue_list):
 
 
 def get_total_results(data):
+    data = data.json()
     try:
         total_results = data['response']['totalResults']
     except KeyError:
@@ -68,6 +69,7 @@ def get_total_results(data):
 
 
 def get_venue_list(data):
+    data = data.json()
     venue_list = []
     for item in data['response']['groups']:
         for groups in item['items']:
@@ -128,7 +130,7 @@ def get_response(food, location, offset):
         offset=offset,
     )
     resp = requests.get(url=url, params=params)
-    return resp.json
+    return resp
 
 
             # page_list = []
