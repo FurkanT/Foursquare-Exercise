@@ -55,20 +55,22 @@
         </table>
 {% if venue_list %}
         <div style="margin-left:40%"  class="pagination">
-            {% if previous_page in page_list %}
-                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">&laquo;</a>
-                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">{{previous_page}}</a>
-            {% endif %}
-                <a  style="pointer-events: none; cursor: default;" href="" class="inactiveLink">{{current_page}}</a>
-             <span style="float:right;margin-top:30px" class="current">
-                Page {{ current_page }} of {{ total_page_numbers }}.
-             </span>
-            {% if next_page in page_list %}
-                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{next_page}}</a>
-                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">&raquo;</a>
-            <!-- <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">..</a>
-                <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{last_page}}</a>-->
-            {% endif %}
+            <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{offset}}">Next</a>
+
+            <!--{% if previous_page in page_list %}-->
+                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">&laquo;</a>-->
+                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">{{previous_page}}</a>-->
+            <!--{% endif %}-->
+                <!--<a  style="pointer-events: none; cursor: default;" href="" class="inactiveLink">{{current_page}}</a>-->
+             <!--<span style="float:right;margin-top:30px" class="current">-->
+                <!--Page {{ current_page }} of {{ total_page_numbers }}.-->
+             <!--</span>-->
+            <!--{% if next_page in page_list %}-->
+                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{next_page}}</a>-->
+                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">&raquo;</a>-->
+            <!--&lt;!&ndash; <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">..</a>-->
+                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{last_page}}</a>&ndash;&gt;-->
+            <!--{% endif %}-->
         </div>
 {% endif %}
 
