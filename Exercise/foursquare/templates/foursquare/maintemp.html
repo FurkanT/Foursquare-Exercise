@@ -58,10 +58,10 @@
         <div style="margin-left:40%"  class="pagination">
 
 
-            {% if po_exists %}
+            {% if prev_offset %}
             <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{prev_offset}}">Previous</a>
             {% endif %}
-            {% if no_exists %}
+            {% if next_offset %}
             <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{next_offset}}">Next</a>
             {% endif %}
             <!--{% if previous_page in page_list %}-->

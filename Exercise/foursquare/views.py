@@ -17,42 +17,41 @@ def search(request):
             'form_box': form,
         }
         return render(request, 'foursquare/maintemp.html', context)
+    print("form is valid")
+    cd = form.cleaned_data
+    food = cd['food']
+    location = cd['location']
+    print(food, location)
+    offset = request.GET.get('offset')
+    if offset is None:
+        offset = 1
+    data = get_response(food, location, offset)
+    venue_list = get_venue_list(data)
+    sorted_list = get_sorted_list(venue_list)
+    total_results = get_total_results(data)
+    if total_results != 0:
+        current_search = get_and_save_the_obj(food, location)
     else:
-        print("form is valid")
-        cd = form.cleaned_data
-        food = cd['food']
-        location = cd['location']
-        print(food, location)
-        offset = request.GET.get('offset')
-        if offset is None:
-            offset = 0
-        data = get_response(food, location, offset)
-        venue_list = get_venue_list(data)
-        sorted_list = get_sorted_list(venue_list)
-        po_exists = False  # previous offset
-        no_exists = False  # next offset
-        next_offset = int(offset) + 10
+        current_search = None
+    print(offset)
+    if int(offset) <= 10:
+        prev_offset = None
+    else:
         prev_offset = int(offset) - 10
-        total_results = get_total_results(data)
-        if total_results != 0:
-            current_search = get_and_save_the_obj(food, location)
-            if int(offset) > 0:  # previous link exists after first page
-                po_exists = True
-            if int(offset) < total_results:  # next link exits until its last page
-                no_exists = True
-        context = {
-            'venue_list': sorted_list,
-            'recent_searches': recent_searches,
-            'form_box': form,
-            'next_offset': next_offset,
-            'no_exists': no_exists,
-            'prev_offset': prev_offset,
-            'po_exists': po_exists,
-            'current_search': current_search,
-            'total_venue_count': total_results,
-
-        }
-        return render(request, 'foursquare/maintemp.html', context)
+    if int(offset) >= total_results - 10:
+        next_offset = None
+    else:
+        next_offset = int(offset) + 10
+    context = {
+        'venue_list': sorted_list,
+        'recent_searches': recent_searches,
+        'form_box': form,
+        'next_offset': next_offset,
+        'prev_offset': prev_offset,
+        'current_search': current_search,
+        'total_venue_count': total_results,
+    }
+    return render(request, 'foursquare/maintemp.html', context)
 
 
 def get_sorted_list(venue_list):
