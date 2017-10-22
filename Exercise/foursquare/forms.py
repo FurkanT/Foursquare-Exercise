@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 class LocationForm(ModelForm):
     class Meta:
         model = LocationSearch
-        fields = ['food', 'location', 'offset']
+        fields = ['food', 'location']
         widgets = {'offset': HiddenInput()}
 
 

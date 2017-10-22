@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from .models import LocationSearch
 from .forms import LocationForm
 import requests
@@ -40,7 +40,7 @@ def register(request):
 
 
 def search(request):
-
+    LocationSearch.objects.all().delete()
     recent_searches = get_recent_searches()
     form = LocationForm(request.GET)
     if not form.is_valid():
@@ -130,7 +130,7 @@ def get_recent_searches():
 
 
 def get_and_save_the_obj(food, location):
-    # search for the object in database, if objects doesn't exist,
+    # search for the object in database, if it doesn't exist,
     # then create it, finally change its search_date to now,
     # so it will appear on top of the recent_searches list.
     try:
