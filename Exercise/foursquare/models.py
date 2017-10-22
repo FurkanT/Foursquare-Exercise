@@ -9,3 +9,4 @@ class LocationSearch(models.Model):
 
     def __str__(self):
         return self.food + self.location
+

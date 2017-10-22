@@ -1,9 +1,42 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .models import LocationSearch
 from .forms import LocationForm
 import requests
 from operator import itemgetter
 from django.utils import timezone
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
+from django.http import HttpResponse
+from .forms import SignUpForm
+
+
+def login(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    print(username + password)
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            auth_login(request, user)
+        else:
+            return HttpResponse('<h1>disabled account</h1>')
+    else:
+        return HttpResponse('<h1>Invalid login</h1>')
+
+
+def register(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            auth_login(request, user)
+            return redirect('/')
+    else:
+        form = SignUpForm()
+    return render(request, 'foursquare/signup.html', {'form': form})
 
 
 def search(request):
@@ -24,7 +57,7 @@ def search(request):
     print(food, location)
     offset = request.GET.get('offset')
     if offset is None:
-        offset = 1
+        offset = 0
     data = get_response(food, location, offset)
     venue_list = get_venue_list(data)
     sorted_list = get_sorted_list(venue_list)
@@ -34,10 +67,12 @@ def search(request):
     else:
         current_search = None
     print(offset)
-    if int(offset) <= 10:
+    if int(offset) < 10:
         prev_offset = None
     else:
         prev_offset = int(offset) - 10
+        if prev_offset == 0:        # this means if offset = 10, so in second page i want to show "previous"
+            prev_offset = str(0)    # but if i don't make it a string prev_offset will be recognized as None
     if int(offset) >= total_results - 10:
         next_offset = None
     else:
