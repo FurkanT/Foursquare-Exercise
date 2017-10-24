@@ -40,7 +40,6 @@ def register(request):
 
 
 def search(request):
-    LocationSearch.objects.all().delete()
     recent_searches = get_recent_searches()
     form = LocationForm(request.GET)
     if not form.is_valid():
@@ -58,10 +57,13 @@ def search(request):
     offset = request.GET.get('offset')
     if offset is None:
         offset = 0
+
     data = get_response(food, location, offset)
+    total_results = get_total_results(data)
+    print(total_results)
     venue_list = get_venue_list(data)
     sorted_list = get_sorted_list(venue_list)
-    total_results = get_total_results(data)
+
     if total_results != 0:
         current_search = get_and_save_the_obj(food, location)
     else:
@@ -155,8 +157,10 @@ def get_and_save_the_obj(food, location):
 def get_response(food, location, offset):
     url = 'https://api.foursquare.com/v2/venues/explore'
     params = dict(
-        client_id='V131V0IPODZOAI4DH0TXB0W1VF4R1QCAHASGHJI35D3KJLWK',
-        client_secret='L5RZFRA1K2KPH33H12BFD3MECOJKEBIJSLP14KXYRYW3A5AF',
+        client_id='EWVGDNKMOOMNXCU1KMTPNYZRU11BLVTCTG2LGJ2F44UQA1K1',
+        #client_id='V131V0IPODZOAI4DH0TXB0W1VF4R1QCAHASGHJI35D3KJLWK',
+        client_secret='E4M0HFS3AYQDMHSZTGAN0NOFZJQ34ELBNOZW4H4FPYKTCRZG',
+        #client_secret='L5RZFRA1K2KPH33H12BFD3MECOJKEBIJSLP14KXYRYW3A5AF',
         v='20170801',
         near=location,
         query=food,
