@@ -12,6 +12,12 @@
 
 
 </div>
+{% if user.is_authenticated %}
+<img src="/static/images/{{ user.profile.avatar }}">
+{% endif %}
+<div>
+
+</div>
     <div class="login-register-section">
         {% if user.is_authenticated %}
             <p style="float:left">Welcome {{user.username}}!</p>
@@ -22,7 +28,14 @@
               <input style="float:right;margin-top:10px" class="aButton" type="submit" value="Delete My Account" />
         </form>
         <a style="float:right;margin-top:10px;" class="aButton" href="password">change password</a>
-
+        <a style="float:right;margin-top:10px;" class="aButton" href="change-email">change email</a>
+<form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>
+        <input  type="file" class="" name="avatar">
+    </p>
+    <input type="submit" value="Submit" />
+</form>
         {% else %}
             <a class="aButton" href="{% url 'login' %}">Login</a>
             <a class="aButton" style="margin-left:5%" href="{% url 'signup' %}">Sign up</a>

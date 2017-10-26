@@ -21,6 +21,12 @@ class SignUpForm(UserCreationForm):
         fields = ('username', 'email', 'date_of_birth', 'password1', 'password2')
 
 
+class ChangeEmailForm(forms.Form):
+    new_email = forms.EmailField(max_length=144)
+
+
+class ImageUploadForm(forms.Form):
+    avatar = forms.ImageField()
 # class ProfileForm(forms.ModelForm):
 #     class Meta:
 #         model = Profile

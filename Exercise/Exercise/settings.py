@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'foursquare.middleware.CheckBirthdayMiddleware',
 ]
 
 ROOT_URLCONF = 'Exercise.urls'

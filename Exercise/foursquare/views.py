@@ -7,13 +7,14 @@ from django.utils import timezone
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.http import HttpResponse
-from .forms import SignUpForm
+from .forms import SignUpForm, ImageUploadForm, ChangeEmailForm
 from django.views.generic import DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django import forms
 
 
 def login(request):
@@ -52,18 +53,33 @@ def register(request):
     return render(request, 'foursquare/signup.html', context)
 
 
+def upload_image(request):
+    if request.method == 'POST':
+        form = ImageUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            user_id = request.user.id
+            user = User.objects.get(pk=user_id)
+            user.profile.avatar = form.cleaned_data['avatar']
+            user.save()
+            print('valid image save?')
+            return redirect('/')
+    else:
+        form = ImageUploadForm()
+    return render(request, 'upload.html', {'form': form})
+
+
 def search(request):
 
     print("User: " + str(request.user))
     current_user = request.user
     if not current_user.is_anonymous():
         user_searches = get_user_searches(current_user)
-        if it_is_birthday(current_user):
-            context = {
-                'age': get_age(current_user),
-                'user_name': current_user.username,
-            }
-            return render(request, 'foursquare/birthdaypage.html', context)
+        # if it_is_birthday(current_user):
+        #     context = {
+        #         'age': get_age(current_user),
+        #         'user_name': current_user.username,
+        #     }
+        #     return render(request, 'foursquare/birthdaypage.html', context)
 
         print("User searches in view: "+str(user_searches))
     else:
@@ -119,16 +135,32 @@ def search(request):
     return render(request, 'foursquare/maintemp.html', context)
 
 
+def change_email(request):
+    if request.method == 'POST':
+        form = ChangeEmailForm(request.POST)
+        if form.is_valid():
+            new_email = form.cleaned_data.get("new_email")
+            if not User.objects.filter(email=new_email):
+                request.user.email = new_email
+                request.user.save()
+                print("password is now: "+str(request.user.email))
+                return redirect('/')
+            raise forms.ValidationError('This email address is already in use.')
+    else:
+        form = ChangeEmailForm()
+        return render(request, 'foursquare/emailchangepage.html', {'form': form})
+
+
 def change_password(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Important!
+            update_session_auth_hash(request, user)
             #messages.success(request, 'Your password was successfully updated!')
             return redirect('/')
         else:
-            print("errors")#messages.error(request, 'Please correct the error below.')
+            print("errors")
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'foursquare/passwordchange.html', {
@@ -149,19 +181,19 @@ def delete_user(request, pk):
     return search(request)
 
 
-def get_age(user):
-    print(user.profile.date_of_birth.month)
-    return timezone.now().year - user.profile.date_of_birth.year
+# def get_age(user):
+#     print(user.profile.date_of_birth.month)
+#     return timezone.now().year - user.profile.date_of_birth.year
 
 
-def it_is_birthday(user):
-    birthday = user.profile.date_of_birth
-    now = timezone.now()
-    if birthday.month == now.month and birthday.day == now.day:
-        return True
-    else:
-        return False
-
+# def it_is_birthday(user):
+#     birthday = user.profile.date_of_birth
+#     now = timezone.now()
+#     if birthday.month == now.month and birthday.day == now.day:
+#         return True
+#     else:
+#         return False
+#
 
 def get_user_searches(current_user):
     print("current user id: "+str(current_user.id))

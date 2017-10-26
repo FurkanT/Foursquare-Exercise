@@ -5,6 +5,8 @@ from django.views.generic import TemplateView
 
 
 urlpatterns = [
+    url(r'^change-email/$', views.change_email, name='change_email'),
+    url(r'^upload-image/$', views.upload_image, name='upload_image'),
     url(r'^password/$', views.change_password, name='change_password'),
     url(r'^birthday-page/$', TemplateView.as_view(template_name="foursquare/birthdaypage.html"), name='birthday'),
     url(r'^delete-user/(?P<pk>\d+)/$', views.delete_user, name='delete_user'),

@@ -20,7 +20,9 @@ class LocationSearch(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     date_of_birth = models.DateField(blank=True, null=True)
-    avatar = models.ImageField(upload_to='foursquare/images/', blank=True)
+    avatar = models.ImageField(upload_to='static/images/',
+                               blank=True,
+                               default='/static/images/default-avatar.png')
 
 
 @receiver(post_save, sender=User)
