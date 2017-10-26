@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django import forms
-
+from dateutil import relativedelta
 
 def login(request):
     username = request.POST['username']
@@ -181,6 +181,21 @@ def delete_user(request, pk):
     return search(request)
 
 
+def more_than_3_months():
+    now = timezone.now()
+    users = User.objects.all()
+    last_login_dates = []
+
+    for user in users:
+        last_login_dates.append(user.last_login)
+    for date in last_login_dates:
+        difference_in_months = relativedelta.relativedelta(now, date).months
+        if int(difference_in_months) >= 3:
+            print("we should send email")
+        else:
+            print("not more than 2 months, nice")
+
+
 # def get_age(user):
 #     print(user.profile.date_of_birth.month)
 #     return timezone.now().year - user.profile.date_of_birth.year
@@ -194,6 +209,7 @@ def delete_user(request, pk):
 #     else:
 #         return False
 #
+
 
 def get_user_searches(current_user):
     print("current user id: "+str(current_user.id))
