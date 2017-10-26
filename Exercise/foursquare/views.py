@@ -8,6 +8,12 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.http import HttpResponse
 from .forms import SignUpForm
+from django.views.generic import DeleteView
+from django.urls import reverse_lazy
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 
 def login(request):
@@ -17,7 +23,7 @@ def login(request):
     user = authenticate(username=username, password=password)
     if user is not None:
         if user.is_active:
-            auth_login(request, user)
+                auth_login(request, user)
         else:
             return HttpResponse('<h1>disabled account</h1>')
     else:
@@ -28,7 +34,11 @@ def register(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            user.refresh_from_db()
+            user.profile.date_of_birth = form.cleaned_data.get('date_of_birth')
+            print(user.profile.date_of_birth)
+            user.save()
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
@@ -36,10 +46,28 @@ def register(request):
             return redirect('/')
     else:
         form = SignUpForm()
-    return render(request, 'foursquare/signup.html', {'form': form})
+    context = {
+                'form': form,
+    }
+    return render(request, 'foursquare/signup.html', context)
 
 
 def search(request):
+
+    print("User: " + str(request.user))
+    current_user = request.user
+    if not current_user.is_anonymous():
+        user_searches = get_user_searches(current_user)
+        if it_is_birthday(current_user):
+            context = {
+                'age': get_age(current_user),
+                'user_name': current_user.username,
+            }
+            return render(request, 'foursquare/birthdaypage.html', context)
+
+        print("User searches in view: "+str(user_searches))
+    else:
+        user_searches = ""
     recent_searches = get_recent_searches()
     form = LocationForm(request.GET)
     if not form.is_valid():
@@ -47,6 +75,7 @@ def search(request):
         context = {
             'recent_searches': recent_searches,
             'form_box': form,
+            'user_searches': user_searches,
         }
         return render(request, 'foursquare/maintemp.html', context)
     print("form is valid")
@@ -57,15 +86,13 @@ def search(request):
     offset = request.GET.get('offset')
     if offset is None:
         offset = 0
-
     data = get_response(food, location, offset)
     total_results = get_total_results(data)
     print(total_results)
     venue_list = get_venue_list(data)
     sorted_list = get_sorted_list(venue_list)
-
     if total_results != 0:
-        current_search = get_and_save_the_obj(food, location)
+        current_search = get_and_save_the_obj(food, location, current_user)
     else:
         current_search = None
     print(offset)
@@ -87,8 +114,60 @@ def search(request):
         'prev_offset': prev_offset,
         'current_search': current_search,
         'total_venue_count': total_results,
+        'user_searches': user_searches,
     }
     return render(request, 'foursquare/maintemp.html', context)
+
+
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            #messages.success(request, 'Your password was successfully updated!')
+            return redirect('/')
+        else:
+            print("errors")#messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'foursquare/passwordchange.html', {
+        'form': form
+    })
+
+
+class SearchQueryDelete(DeleteView):
+    model = LocationSearch
+    success_url = reverse_lazy('search')
+
+
+def delete_user(request, pk):
+    print(pk)
+    user = get_object_or_404(User, id=pk)
+    user.is_active = False
+    user.save()
+    return search(request)
+
+
+def get_age(user):
+    print(user.profile.date_of_birth.month)
+    return timezone.now().year - user.profile.date_of_birth.year
+
+
+def it_is_birthday(user):
+    birthday = user.profile.date_of_birth
+    now = timezone.now()
+    if birthday.month == now.month and birthday.day == now.day:
+        return True
+    else:
+        return False
+
+
+def get_user_searches(current_user):
+    print("current user id: "+str(current_user.id))
+    print(LocationSearch.objects.all())
+    print(LocationSearch.objects.filter(searched_by=current_user))
+    return LocationSearch.objects.filter(searched_by=current_user)
 
 
 def get_sorted_list(venue_list):
@@ -107,13 +186,16 @@ def get_total_results(data):
 def get_venue_list(data):
     data = data.json()
     venue_list = []
-    for item in data['response']['groups']:
-        for groups in item['items']:
-            name = groups.get('venue').get('name')
-            phone_number = set_phone_number(groups)
-            check_in_count = groups.get('venue', {}).get('stats').get('checkinsCount')
-            venue = {'name': name, 'phone_number': phone_number, 'checkin_count': check_in_count}
-            venue_list.append(venue)
+    try:
+        for item in data['response']['groups']:
+            for groups in item['items']:
+                name = groups.get('venue').get('name')
+                phone_number = set_phone_number(groups)
+                check_in_count = groups.get('venue', {}).get('stats').get('checkinsCount')
+                venue = {'name': name, 'phone_number': phone_number, 'checkin_count': check_in_count}
+                venue_list.append(venue)
+    except KeyError:
+        print("Bad values")
     print("selam")
     print(venue_list)
     print("venue list length: " + str(len(venue_list)))
@@ -131,7 +213,7 @@ def get_recent_searches():
     return LocationSearch.objects.order_by('-search_date')[:10]
 
 
-def get_and_save_the_obj(food, location):
+def get_and_save_the_obj(food, location, user):
     # search for the object in database, if it doesn't exist,
     # then create it, finally change its search_date to now,
     # so it will appear on top of the recent_searches list.
@@ -139,18 +221,23 @@ def get_and_save_the_obj(food, location):
         search_obj = LocationSearch.objects.get(food=food, location=location)
         print(str(search_obj.search_date))
         search_obj.search_date = timezone.now()
+        if user.is_anonymous():
+            search_obj.searched_by = None
+        else:
+            print("User is not anonymous!")
+            search_obj.searched_by = user
         search_obj.save()
         print(str(search_obj.search_date))
         print("test ???")
     except LocationSearch.DoesNotExist:
-        search_obj = LocationSearch.objects.create(food=food, location=location)
+        search_obj = LocationSearch.objects.create(food=food, location=location, searched_by=user)
     except LocationSearch.MultipleObjectsReturned:
         print("object exists")
     finally:
         search_obj.search_date = timezone.now()
         recent_searches = LocationSearch.objects.order_by('-search_date')[:10]
         for obj in recent_searches:
-            print("recent searches: " + obj.food + " " + obj.location)
+            print("recent searches: " + obj.food + " " + obj.location + " " + str(obj.searched_by))
         return search_obj
 
 
@@ -169,38 +256,3 @@ def get_response(food, location, offset):
     )
     resp = requests.get(url=url, params=params)
     return resp
-
-
-            # page_list = []
-            # if total_results % 10 == 0:
-            #     total_page_numbers = int(total_results / 10)
-            # else:
-            #     total_page_numbers = int(total_results / 10 + 1)
-            #
-            # for i in range(total_page_numbers):
-            #     page_list.append(i + 1)
-            #     # print("---")
-            #     # print(page_list)
-            # page = request.GET.get('page')
-            # if page is None or int(page) < 0 or int(page) > total_page_numbers:
-            #     page = 1
-            # current_page = int(page)
-            # print(page)
-            # next_page = int(current_page) + 1
-            # previous_page = int(current_page) - 1
-            # offset = (int(current_page) - 1) * 10
-            # print(offset)
-            # print(current_page)
-            # last_page = len(page_list)
-            # print('Previous page:', str(previous_page))
-            # print('Current page:', str(current_page))
-            # print('Next page:', str(next_page))
-# venue = {'name': name, 'phone_number': phone_number, 'checkin_count': check_in_count}
-                    # venue_list.append(venue)
-
-        # 'previous_page': previous_page,
-        # 'next_page': next_page,
-        # 'current_page': current_page,
-        # 'total_page_numbers': total_page_numbers,
-        # 'page_list': page_list,
-        # 'last_page': last_page,

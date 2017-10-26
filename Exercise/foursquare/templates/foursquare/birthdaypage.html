@@ -1,0 +1,17 @@
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Happy Birthday!</title>
+      <link rel="stylesheet" href="{% static 'css/fs.css' %}">
+</head>
+<body>
+
+<h1 style="margin-left:30%">Happy Birthday {{user_name}}!, You are {{age}} now!</h1>
+<a  class="aButton" style="float:right;margin-right:10%" href="{% url 'logout' %}">logout</a>
+<iframe width="100%" height="600"
+src="https://www.youtube.com/embed/H2kxjnMrzYQ?autoplay=1">
+</iframe>
+
+</body>
+</html>

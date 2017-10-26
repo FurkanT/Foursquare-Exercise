@@ -1,9 +1,10 @@
 from django import forms
 from django.forms import ModelForm
-from foursquare.models import LocationSearch
+from foursquare.models import LocationSearch,Profile
 from django.forms.widgets import HiddenInput
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.forms.extras.widgets import SelectDateWidget
 
 
 class LocationForm(ModelForm):
@@ -14,8 +15,13 @@ class LocationForm(ModelForm):
 
 
 class SignUpForm(UserCreationForm):
-    email = forms.EmailField(max_length=254)
-
-    class Meta:
+    date_of_birth = forms.DateField(input_formats=['%d/%m/%Y'])
+    class Meta:     #date_of_birth = forms.DateField(SelectDateWidget(years=range(1900, 2100)))
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ('username', 'email', 'date_of_birth', 'password1', 'password2')
+
+
+# class ProfileForm(forms.ModelForm):
+#     class Meta:
+#         model = Profile
+#         fields = ('date_of_birth',)

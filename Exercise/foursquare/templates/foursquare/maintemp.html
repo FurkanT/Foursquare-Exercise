@@ -3,20 +3,31 @@
 <head>
     <title>Ultimate Client</title>
     <link rel="stylesheet" href="{% static 'css/fs.css' %}">
-
 </head>
 <body>
 {{ form_box.errors }}
 {{ form_box.non_field_errors }}
     <h2>The Ultimate FourSquare Client </h2>
+<div style="float:left">
+
+
+</div>
     <div class="login-register-section">
         {% if user.is_authenticated %}
             <p style="float:left">Welcome {{user.username}}!</p>
             <a  class="aButton" style="float:right;margin-right:10%" href="{% url 'logout' %}">logout</a>
+
+        <form action="{% url 'delete_user' user.pk %}" method="post">
+            {% csrf_token %}
+              <input style="float:right;margin-top:10px" class="aButton" type="submit" value="Delete My Account" />
+        </form>
+        <a style="float:right;margin-top:10px;" class="aButton" href="password">change password</a>
+
         {% else %}
             <a class="aButton" href="{% url 'login' %}">Login</a>
             <a class="aButton" style="margin-left:5%" href="{% url 'signup' %}">Sign up</a>
         {% endif %}
+
     </div>
     <div class="main-form">
         <form action="" method="GET">
@@ -27,9 +38,9 @@
             <input style="margin-right:37%" class="aButton" type="submit" name="submit" value="search" />
         </form>
     </div>
+{% if total_venue_count %}
     <div class="results">
         <p style="text-align:center"><b>Results</b> </p>
-        
        -<table id="data" style="width:100%; ">
         <tr >
             <th >
@@ -65,45 +76,35 @@
 {% if venue_list %}
         <p>Total Venue Count: {{total_venue_count}}</p>
         <div style="margin-left:40%"  class="pagination">
-
-
             {% if prev_offset %}
             <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{prev_offset}}">Previous</a>
             {% endif %}
             {% if next_offset %}
             <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{next_offset}}">Next</a>
             {% endif %}
-            <!--{% if previous_page in page_list %}-->
-                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">&laquo;</a>-->
-                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{previous_page}}">{{previous_page}}</a>-->
-            <!--{% endif %}-->
-                <!--<a  style="pointer-events: none; cursor: default;" href="" class="inactiveLink">{{current_page}}</a>-->
-             <!--<span style="float:right;margin-top:30px" class="current">-->
-                <!--Page {{ current_page }} of {{ total_page_numbers }}.-->
-             <!--</span>-->
-            <!--{% if next_page in page_list %}-->
-                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{next_page}}</a>-->
-                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">&raquo;</a>-->
-            <!--&lt;!&ndash; <a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">..</a>-->
-                <!--<a href="?food={{current_search.food}}&location={{current_search.location}}&page={{next_page}}">{{last_page}}</a>&ndash;&gt;-->
-            <!--{% endif %}-->
         </div>
 {% endif %}
-
     </div>
+{% endif %}
     <div class="recent_searches">
         <b><p style="text-align:center">Previous Searches</p></b>
         <br />
-        {% if recent_searches %}
-        <ul>
-            {% for search in recent_searches %}
-            <li> <a class="recent-search-links" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
+        {% if user.is_authenticated %}
+            {% for search in user_searches %}
+             <ul><li> <a class="recent-search-links" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a>
+             <form action="{% url 'delete_entry' search.pk %}" method="post">
+            {% csrf_token %}
+              <input type="submit" value="Delete" />
+            </form>
+             </li></ul>
             {% endfor %}
-        </ul>
+        {% elif recent_searches %}
+            {% for search in recent_searches %}
+                <li> <a class="recent-search-links" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
+            {% endfor %}
         {% else %}
         <p style="text-align:center">No search has been made.</p>
         {% endif %}
     </div>
-
 </body>
 </html>
