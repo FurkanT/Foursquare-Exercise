@@ -13,7 +13,7 @@
 
 </div>
 {% if user.is_authenticated %}
-<img src="/static/images/{{ user.profile.avatar }}">
+<img src="{{ user.profile.avatar }}">
 {% endif %}
 <div>
 
@@ -34,7 +34,7 @@
     <p>
         <input  type="file" class="" name="avatar">
     </p>
-    <input type="submit" value="Submit" />
+    <p><input style="float:right" class="aButton" type="submit" value="Submit" /></p>
 </form>
         {% else %}
             <a class="aButton" href="{% url 'login' %}">Login</a>

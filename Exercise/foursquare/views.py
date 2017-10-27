@@ -67,7 +67,7 @@ def upload_image(request):
             return redirect('/')
     else:
         form = ImageUploadForm()
-    return render(request, 'upload.html', {'form': form})
+        return render(request, 'upload.html', {'form': form})
 
 
 def search(request):
@@ -77,12 +77,6 @@ def search(request):
     current_user = request.user
     if not current_user.is_anonymous():
         user_searches = get_user_searches(current_user)
-        # if it_is_birthday(current_user):
-        #     context = {
-        #         'age': get_age(current_user),
-        #         'user_name': current_user.username,
-        #     }
-        #     return render(request, 'foursquare/birthdaypage.html', context)
         print("User searches in view: "+str(user_searches))
     else:
         user_searches = ""
@@ -133,6 +127,7 @@ def search(request):
         'current_search': current_search,
         'total_venue_count': total_results,
         'user_searches': user_searches,
+        'user.profile.avatar': request.user.profile.avatar
     }
     return render(request, 'foursquare/maintemp.html', context)
 
@@ -159,7 +154,6 @@ def change_password(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            #messages.success(request, 'Your password was successfully updated!')
             return redirect('/')
         else:
             print("errors")
@@ -213,10 +207,10 @@ def mail_to_user_before_birthday():
     print(date_of_birthdays)
     for date in date_of_birthdays:
         if now.day-date.day >= 1:
-            birthday_users = Profile.objects.filter(date_of_birth=date)
-            for user in birthday_users:
-                user_mail_addresses.append(user.user.email)
-                print("email sent to birthday guy! :" + str(user.user.email))
+            birthday_profiles = Profile.objects.filter(date_of_birth=date)
+            for profile in birthday_profiles:
+                user_mail_addresses.append(profile.user.email)
+                print("email sent to birthday guy! :" + str(profile.user.email))
         else:
             print("its no ones birthday")
     user_mail_addresses = list(set(user_mail_addresses))  # remove duplicates
@@ -307,9 +301,7 @@ def get_response(food, location, offset):
     url = 'https://api.foursquare.com/v2/venues/explore'
     params = dict(
         client_id='EWVGDNKMOOMNXCU1KMTPNYZRU11BLVTCTG2LGJ2F44UQA1K1',
-        #client_id='V131V0IPODZOAI4DH0TXB0W1VF4R1QCAHASGHJI35D3KJLWK',
         client_secret='E4M0HFS3AYQDMHSZTGAN0NOFZJQ34ELBNOZW4H4FPYKTCRZG',
-        #client_secret='L5RZFRA1K2KPH33H12BFD3MECOJKEBIJSLP14KXYRYW3A5AF',
         v='20170801',
         near=location,
         query=food,
