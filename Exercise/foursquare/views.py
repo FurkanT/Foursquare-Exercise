@@ -71,8 +71,8 @@ def upload_image(request):
 
 
 def search(request):
-    mail_to_user_before_birthday()
-    mail_to_non_visitor_users()
+    #mail_to_user_before_birthday()
+    #mail_to_non_visitor_users()
     print("User: " + str(request.user))
     current_user = request.user
     if not current_user.is_anonymous():
@@ -175,48 +175,6 @@ def delete_user(request, pk):
     user.is_active = False
     user.save()
     return search(request)
-
-
-def mail_to_non_visitor_users():
-    now = timezone.now()
-    users = User.objects.all()
-    user_last_login_dates = []
-    user_mail_addresses = []
-    for user in users:
-        user_last_login_dates.append(user.last_login)
-    for date in user_last_login_dates:
-        time_passed_in_months = relativedelta.relativedelta(now, date).months
-        if int(time_passed_in_months) >= 3:
-            user_mail = User.objects.filter(last_login=date).email
-            user_mail_addresses.append(user_mail)
-            print("email sent to " + str(user_mail))
-        else:
-            print("not more than 2 months, nice")
-    send_mail('hi', 'why don\'t u visit my site? its so good', 'from@example.com', user_mail_addresses)
-
-
-def mail_to_user_before_birthday():
-    now = timezone.now()
-    users = User.objects.all()
-    user_mail_addresses = []
-    date_of_birthdays = []
-    for user in users:
-        date_of_birthdays.append(user.profile.date_of_birth)
-    date_of_birthdays = list(set(date_of_birthdays))
-    print("date of birthdays:")
-    print(date_of_birthdays)
-    for date in date_of_birthdays:
-        if now.day-date.day >= 1:
-            birthday_profiles = Profile.objects.filter(date_of_birth=date)
-            for profile in birthday_profiles:
-                user_mail_addresses.append(profile.user.email)
-                print("email sent to birthday guy! :" + str(profile.user.email))
-        else:
-            print("its no ones birthday")
-    user_mail_addresses = list(set(user_mail_addresses))  # remove duplicates
-    send_mail('hi', 'happy birthday!', 'from@example.com', user_mail_addresses)
-    print("email sent to these guys: ")
-    print(user_mail_addresses)
 
 
 def get_user_searches(current_user):
