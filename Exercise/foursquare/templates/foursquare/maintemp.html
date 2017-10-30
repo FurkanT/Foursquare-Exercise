@@ -172,7 +172,7 @@
         {% elif recent_searches %}
             {% for search in recent_searches %}
         <div class="list-group">
-                 <a class="list-group-item list-group-item-action " style="text-decoration:none;margin-bottom:1px; transform: rotate(-3deg);" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
+                 <a class="list-group-item list-group-item-action " style="text-decoration:none;margin-bottom:1px; " href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
         </div>
             {% endfor %}
         {% else %}

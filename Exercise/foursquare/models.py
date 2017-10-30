@@ -12,6 +12,7 @@ class LocationSearch(models.Model):
     search_date = models.DateTimeField(auto_now_add=True)
     offset = models.CharField(max_length=5, default=1)
     searched_by = models.ForeignKey(User, blank=True, null=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.food + " " + self.location + " " + str(self.searched_by)
@@ -24,6 +25,8 @@ class Profile(models.Model):
                                blank=True,
                                default='static/images/default-avatar.png')
 
+    def __str__(self):
+        return self.user.username + "'s Profile"
 
 @receiver(post_save, sender=User)
 def update_user_profile(sender, instance, created, **kwargs):
