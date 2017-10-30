@@ -15,8 +15,6 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django import forms
-from dateutil import relativedelta
-from django.core.mail import send_mail
 
 
 def login(request):
@@ -71,8 +69,6 @@ def upload_image(request):
 
 
 def search(request):
-    #mail_to_user_before_birthday()
-    #mail_to_non_visitor_users()
     print("User: " + str(request.user))
     current_user = request.user
     if not current_user.is_anonymous():
@@ -109,11 +105,11 @@ def search(request):
         current_search = None
     print(offset)
     if int(offset) < 10:
-        prev_offset = None
+        previous_offset = None
     else:
-        prev_offset = int(offset) - 10
-        if prev_offset == 0:        # this means if offset = 10, so in second page i want to show "previous"
-            prev_offset = str(0)    # but if i don't make it a string prev_offset will be recognized as None
+        previous_offset = int(offset) - 10
+        if previous_offset == 0:        # this means if offset = 10, so in second page i want to show "previous"
+            previous_offset = str(0)    # but if i don't make it a string prev_offset will be recognized as None
     if int(offset) >= total_results - 10:
         next_offset = None
     else:
@@ -123,11 +119,11 @@ def search(request):
         'recent_searches': recent_searches,
         'form_box': form,
         'next_offset': next_offset,
-        'prev_offset': prev_offset,
+        'prev_offset': previous_offset,
         'current_search': current_search,
         'total_venue_count': total_results,
         'user_searches': user_searches,
-        'user.profile.avatar': request.user.profile.avatar
+        'user.profile.avatar': get_user_profile(request.user)
     }
     return render(request, 'foursquare/maintemp.html', context)
 
@@ -231,15 +227,14 @@ def get_and_save_the_obj(food, location, user):
     # search for the object in database, if it doesn't exist,
     # then create it, finally change its search_date to now,
     # so it will appear on top of the recent_searches list.
+    if user.is_anonymous():
+        user = None
     try:
         search_obj = LocationSearch.objects.get(food=food, location=location)
         print(str(search_obj.search_date))
         search_obj.search_date = timezone.now()
-        if user.is_anonymous():
-            search_obj.searched_by = None
-        else:
-            print("User is not anonymous!")
-            search_obj.searched_by = user
+        print("User is not anonymous!")
+        search_obj.searched_by = user
         search_obj.save()
         print(str(search_obj.search_date))
         print("test ???")
@@ -269,6 +264,11 @@ def get_response(food, location, offset):
     resp = requests.get(url=url, params=params)
     return resp
 
+
+def get_user_profile(user):
+    if user.is_anonymous():
+        return None
+    return user.profile.avatar
 
 # def get_age(user):
 #     print(user.profile.date_of_birth.month)
