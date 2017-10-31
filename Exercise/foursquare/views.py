@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django import forms
+from django.contrib import messages
 
 
 def login(request):
@@ -133,12 +134,18 @@ def change_email(request):
         form = ChangeEmailForm(request.POST)
         if form.is_valid():
             new_email = form.cleaned_data.get("new_email")
-            if not User.objects.filter(email=new_email):
+            if not User.objects.filter(email=new_email) and new_email is not None:
                 request.user.email = new_email
                 request.user.save()
-                print("password is now: "+str(request.user.email))
-                return redirect('/')
+                messages.success(request, 'Your email has been updated successfully!')
+                print("mail is now: "+str(request.user.email))
+                return render(request, 'foursquare/emailchangepage.html', {'messages': messages.get_messages(request),
+                                                                           'form': form})
             raise forms.ValidationError('This email address is already in use.')
+        else:
+            messages.warning(request, 'Please try again.')
+            print("mail form is not valid")
+            return render(request, 'foursquare/emailchangepage.html', {'messages': messages.get_messages(request)})
     else:
         form = ChangeEmailForm()
         return render(request, 'foursquare/emailchangepage.html', {'form': form})

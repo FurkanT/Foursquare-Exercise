@@ -31,10 +31,10 @@
         <img style="width:120px;height:auto" src="media/{{ user.profile.avatar }}">
         </div>
             <div class="col-sm-2" style="line-height:80px">
-                <p style="float:left;">Welcome {{user.username}}!</p>
+                <p name="welcome-text" style="float:left;">Welcome {{user.username}}!</p>
             </div>
 <div class="col-sm-6"></div>
-            <div class="col-sm-2"><a  class="btn btn-secondary" style="float:right;margin-right:10%" href="{% url 'logout' %}">logout</a></div>
+            <div class="col-sm-2"><a  class="btn btn-secondary" style="float:right;margin-right:10%" name="logout" href="{% url 'logout' %}">logout</a></div>
     </div>
     <div class="row">
 
@@ -53,8 +53,8 @@
     <div class="col-sm-8"></div>
         <div class="col-sm-2">
 <div  class="btn-group-vertical">
-<a style="border-radius:7px;margin-top:5px" class="btn btn-secondary" type="button" href="password-change">change password</a>
-        <a style="border-radius:7px;margin-top:5px" class="btn btn-secondary" type="button" href="change-email">change email</a>
+<a style="border-radius:7px;margin-top:5px" class="btn btn-secondary" name="change-password" type="button" href="password-change">change password</a>
+        <a style="border-radius:7px;margin-top:5px" class="btn btn-secondary" name="change-email" type="button" href="change-email">change email</a>
   <form action="{% url 'delete_user' user.pk %}" method="post">
             {% csrf_token %}
               <input style="margin-top:5px" class="btn btn-secondary" type="submit" value="Delete My Account" />
@@ -67,8 +67,8 @@
     <div class="row" style="">
         <div class="col-sm-10"></div>
 <div class="col-sm-2" style="height:150px" >
-    <a class="btn btn-secondary" href="{% url 'login' %}">Login</a>
-    <a class="btn btn-secondary" href="{% url 'signup' %}">Sign up</a>
+    <a class="btn btn-secondary" name="login" href="{% url 'login' %}">Login</a>
+    <a class="btn btn-secondary" name="signup" href="{% url 'signup' %}">Sign up</a>
 </div>
     </div>
 {% endif %}
@@ -131,10 +131,7 @@
             </td>
         </tr>
         {% endfor %}
-
         </table>
-
-
         {% if venue_list %}
         <p>Total Venue Count: {{total_venue_count}}</p>
         <div style="margin-left:40%"  class="pagination">
@@ -142,7 +139,7 @@
             <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{prev_offset}}">Previous</a>
             {% endif %}
             {% if next_offset %}
-            <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{next_offset}}">Next</a>
+            <a name="next-page" href="?food={{current_search.food}}&location={{current_search.location}}&offset={{next_offset}}">Next</a>
             {% endif %}
         </div>
 
@@ -150,29 +147,34 @@
     </div>
 {% else %}
             <div class="col-sm-8" >
-
+                <p name="no-results">There is no result!</p>
             </div>
-
 {% endif %}
             </div>
         <div class="col-sm-1" style="background-color:"></div>
     <div class="col-sm-3" style="background-color:" >
-<b><p style="text-align:center">Previous Searches</p></b>
-        <br />
+
         {% if user.is_authenticated %}
+            {% if user_searches %}
+        <b><p style="text-align:center">Previous Searches</p></b>
+            <br />
             {% for search in user_searches %}
 
-             <ul class="list-group"><li class="list-group-item"> <a class="recent-search-links" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a>
+             <div class="list-group"> <a class="list-group-item list-group-item-action" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a>
              <form action="{% url 'delete_entry' search.pk %}" method="post">
             {% csrf_token %}
               <input type="submit" value="Delete" />
             </form>
-             </li></ul>
+                 </div>
+
             {% endfor %}
+            {% else %}
+            <p>No search found</p>
+            {% endif %}
         {% elif recent_searches %}
             {% for search in recent_searches %}
         <div class="list-group">
-                 <a class="list-group-item list-group-item-action " style="text-decoration:none;margin-bottom:1px; " href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
+                 <a name="recent-search" class="list-group-item list-group-item-action " style="text-decoration:none;margin-bottom:1px; " href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
         </div>
             {% endfor %}
         {% else %}
