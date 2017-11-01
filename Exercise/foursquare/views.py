@@ -67,22 +67,16 @@ def upload_image(request):
             return redirect('/')
     else:
         form = ImageUploadForm()
-    return render(request, 'upload.html', {'form': form})
+        return render(request, 'upload.html', {'form': form})
 
 
 def search(request):
-    mail_to_user_before_birthday()
-    mail_to_non_visitor_users()
+    #mail_to_user_before_birthday()
+    #mail_to_non_visitor_users()
     print("User: " + str(request.user))
     current_user = request.user
     if not current_user.is_anonymous():
         user_searches = get_user_searches(current_user)
-        # if it_is_birthday(current_user):
-        #     context = {
-        #         'age': get_age(current_user),
-        #         'user_name': current_user.username,
-        #     }
-        #     return render(request, 'foursquare/birthdaypage.html', context)
         print("User searches in view: "+str(user_searches))
     else:
         user_searches = ""
@@ -133,6 +127,7 @@ def search(request):
         'current_search': current_search,
         'total_venue_count': total_results,
         'user_searches': user_searches,
+        'user.profile.avatar': request.user.profile.avatar
     }
     return render(request, 'foursquare/maintemp.html', context)
 
@@ -159,7 +154,6 @@ def change_password(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            #messages.success(request, 'Your password was successfully updated!')
             return redirect('/')
         else:
             print("errors")
@@ -181,48 +175,6 @@ def delete_user(request, pk):
     user.is_active = False
     user.save()
     return search(request)
-
-
-def mail_to_non_visitor_users():
-    now = timezone.now()
-    users = User.objects.all()
-    user_last_login_dates = []
-    user_mail_addresses = []
-    for user in users:
-        user_last_login_dates.append(user.last_login)
-    for date in user_last_login_dates:
-        time_passed_in_months = relativedelta.relativedelta(now, date).months
-        if int(time_passed_in_months) >= 3:
-            user_mail = User.objects.filter(last_login=date).email
-            user_mail_addresses.append(user_mail)
-            print("email sent to " + str(user_mail))
-        else:
-            print("not more than 2 months, nice")
-    send_mail('hi', 'why don\'t u visit my site? its so good', 'from@example.com', user_mail_addresses)
-
-
-def mail_to_user_before_birthday():
-    now = timezone.now()
-    users = User.objects.all()
-    user_mail_addresses = []
-    date_of_birthdays = []
-    for user in users:
-        date_of_birthdays.append(user.profile.date_of_birth)
-    date_of_birthdays = list(set(date_of_birthdays))
-    print("date of birthdays:")
-    print(date_of_birthdays)
-    for date in date_of_birthdays:
-        if now.day-date.day >= 1:
-            birthday_users = Profile.objects.filter(date_of_birth=date)
-            for user in birthday_users:
-                user_mail_addresses.append(user.user.email)
-                print("email sent to birthday guy! :" + str(user.user.email))
-        else:
-            print("its no ones birthday")
-    user_mail_addresses = list(set(user_mail_addresses))  # remove duplicates
-    send_mail('hi', 'happy birthday!', 'from@example.com', user_mail_addresses)
-    print("email sent to these guys: ")
-    print(user_mail_addresses)
 
 
 def get_user_searches(current_user):
@@ -307,9 +259,7 @@ def get_response(food, location, offset):
     url = 'https://api.foursquare.com/v2/venues/explore'
     params = dict(
         client_id='EWVGDNKMOOMNXCU1KMTPNYZRU11BLVTCTG2LGJ2F44UQA1K1',
-        #client_id='V131V0IPODZOAI4DH0TXB0W1VF4R1QCAHASGHJI35D3KJLWK',
         client_secret='E4M0HFS3AYQDMHSZTGAN0NOFZJQ34ELBNOZW4H4FPYKTCRZG',
-        #client_secret='L5RZFRA1K2KPH33H12BFD3MECOJKEBIJSLP14KXYRYW3A5AF',
         v='20170801',
         near=location,
         query=food,
