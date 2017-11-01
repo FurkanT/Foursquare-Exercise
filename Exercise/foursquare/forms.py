@@ -16,7 +16,8 @@ class LocationForm(ModelForm):
 
 class SignUpForm(UserCreationForm):
     date_of_birth = forms.DateField(input_formats=['%d/%m/%Y'])
-    class Meta:     #date_of_birth = forms.DateField(SelectDateWidget(years=range(1900, 2100)))
+
+    class Meta:
         model = User
         fields = ('username', 'email', 'date_of_birth', 'password1', 'password2')
 

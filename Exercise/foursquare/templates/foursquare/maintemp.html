@@ -1,70 +1,116 @@
 {% load staticfiles %}
 <html>
 <head>
+
     <title>Ultimate Client</title>
-    <link rel="stylesheet" href="{% static 'css/fs.css' %}">
+    <!--<link rel="stylesheet" href="{% static 'css/fs.css' %}">-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <style>
+        body{
+        font-family:"Georgia";
+        }
+    </style>
 </head>
 <body>
 {{ form_box.errors }}
 {{ form_box.non_field_errors }}
-    <h2>The Ultimate FourSquare Client </h2>
-<div style="float:left">
+    <div  class="container-fluid"><h2 style="text-align:center">The Ultimate FourSquare Client </h2></div>
 
 
-</div>
-{% if user.is_authenticated %}
-<img src="{{ user.profile.avatar }}">
-{% endif %}
-<div>
 
-</div>
-    <div class="login-register-section">
+<div class="container" style="">
+
         {% if user.is_authenticated %}
-            <p style="float:left">Welcome {{user.username}}!</p>
-            <a  class="aButton" style="float:right;margin-right:10%" href="{% url 'logout' %}">logout</a>
+<div class="row" style="">
+        <div class="col-sm-2" >
+        <img style="width:120px;height:auto" src="media/{{ user.profile.avatar }}">
+        </div>
+            <div class="col-sm-2" style="line-height:80px">
+                <p name="welcome-text" style="float:left;">Welcome {{user.username}}!</p>
+            </div>
+<div class="col-sm-6"></div>
+            <div class="col-sm-2"><a  class="btn btn-secondary" style="float:right;margin-right:10%" name="logout" href="{% url 'logout' %}">logout</a></div>
+    </div>
+    <div class="row">
 
-        <form action="{% url 'delete_user' user.pk %}" method="post">
-            {% csrf_token %}
-              <input style="float:right;margin-top:10px" class="aButton" type="submit" value="Delete My Account" />
-        </form>
-        <a style="float:right;margin-top:10px;" class="aButton" href="password">change password</a>
-        <a style="float:right;margin-top:10px;" class="aButton" href="change-email">change email</a>
-<form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data">
+      <div class="col-sm-2">  <form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <p>
-        <input  type="file" class="" name="avatar">
+        Change avatar:
+        </br></br>
+        <input   type="file" name="avatar">
     </p>
-    <p><input style="float:right" class="aButton" type="submit" value="Submit" /></p>
-</form>
-        {% else %}
-            <a class="aButton" href="{% url 'login' %}">Login</a>
-            <a class="aButton" style="margin-left:5%" href="{% url 'signup' %}">Sign up</a>
-        {% endif %}
+        <p><input style="float:right" class="btn btn-secondary" type="submit" value="Submit" /></p>
+    </form>
+      </div>
 
+
+    <div class="col-sm-8"></div>
+        <div class="col-sm-2">
+<div  class="btn-group-vertical">
+<a style="border-radius:7px;margin-top:5px" class="btn btn-secondary" name="change-password" type="button" href="password-change">change password</a>
+        <a style="border-radius:7px;margin-top:5px" class="btn btn-secondary" name="change-email" type="button" href="change-email">change email</a>
+  <form action="{% url 'delete_user' user.pk %}" method="post">
+            {% csrf_token %}
+              <input style="margin-top:5px" class="btn btn-secondary" type="submit" value="Delete My Account" />
+        </form>
+</div>
+</div>
+        </div>
+
+{% else %}
+    <div class="row" style="">
+        <div class="col-sm-10"></div>
+<div class="col-sm-2" style="height:150px" >
+    <a class="btn btn-secondary" name="login" href="{% url 'login' %}">Login</a>
+    <a class="btn btn-secondary" name="signup" href="{% url 'signup' %}">Sign up</a>
+</div>
     </div>
-    <div class="main-form">
+{% endif %}
+
+
+
+
+
+    <div class="row">
+        <div class="col-sm-5" style="background-color:"></div>
+        <div id="mainform" class="col-sm-3" style="background-color:" >
         <form action="" method="GET">
             {% csrf_token %}
             {{form_box.as_p}}
             <!--<input type="text" name="food_text"  />
             <input  type="text" name="location_text" value="Location"/>-->
-            <input style="margin-right:37%" class="aButton" type="submit" name="submit" value="search" />
+            <input style="margin-left:30%" class="btn btn-secondary"  type="submit" name="submit" value="search" />
         </form>
     </div>
-{% if total_venue_count %}
-    <div class="results">
-        <p style="text-align:center"><b>Results</b> </p>
-       -<table id="data" style="width:100%; ">
-        <tr >
-            <th >
+
+        <div class="col-4" style="background-color:">
+
+        </div>
+    </div>
+    <div class="row" style="margin-top:100px">
+        <div class="col-sm-8" style="background-color:"  >
+    {% if total_venue_count %}
+    <div class="results" style="">
+        <p style="text-align:center;"><b>Results</b> </p>
+       -<table id="data" class="table table-hover " >
+        <thead class="thead-light">
+
+            <th style="text-align:center" >
                 Name
             </th>
-            <th>
+            <th style="text-align:center">
                 Phone Number
             </th>
-            <th>
+            <th style="text-align:center">
                 Checkins Count
             </th>
+        </thead>
         </tr>
            {% for k in venue_list %}
         <tr>
@@ -84,40 +130,59 @@
                 </div>
             </td>
         </tr>
-            {% endfor %}
+        {% endfor %}
         </table>
-{% if venue_list %}
+        {% if venue_list %}
         <p>Total Venue Count: {{total_venue_count}}</p>
         <div style="margin-left:40%"  class="pagination">
             {% if prev_offset %}
             <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{prev_offset}}">Previous</a>
             {% endif %}
             {% if next_offset %}
-            <a href="?food={{current_search.food}}&location={{current_search.location}}&offset={{next_offset}}">Next</a>
+            <a name="next-page" href="?food={{current_search.food}}&location={{current_search.location}}&offset={{next_offset}}">Next</a>
             {% endif %}
         </div>
-{% endif %}
+
+        {% endif %}
     </div>
+{% else %}
+            <div class="col-sm-8" >
+                <p name="no-results">There is no result!</p>
+            </div>
 {% endif %}
-    <div class="recent_searches">
-        <b><p style="text-align:center">Previous Searches</p></b>
-        <br />
+            </div>
+        <div class="col-sm-1" style="background-color:"></div>
+    <div class="col-sm-3" style="background-color:" >
+
         {% if user.is_authenticated %}
+            {% if user_searches %}
+        <b><p style="text-align:center">Previous Searches</p></b>
+            <br />
             {% for search in user_searches %}
-             <ul><li> <a class="recent-search-links" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a>
+
+             <div class="list-group"> <a class="list-group-item list-group-item-action" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a>
              <form action="{% url 'delete_entry' search.pk %}" method="post">
             {% csrf_token %}
               <input type="submit" value="Delete" />
             </form>
-             </li></ul>
+                 </div>
+
             {% endfor %}
+            {% else %}
+            <p>No search found</p>
+            {% endif %}
         {% elif recent_searches %}
             {% for search in recent_searches %}
-                <li> <a class="recent-search-links" style="text-decoration:none" href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
+        <div class="list-group">
+                 <a name="recent-search" class="list-group-item list-group-item-action " style="text-decoration:none;margin-bottom:1px; " href="?food={{search.food}}&location={{search.location}}&offset=0">{{search.food}} in {{search.location}}</a> </li>
+        </div>
             {% endfor %}
         {% else %}
         <p style="text-align:center">No search has been made.</p>
         {% endif %}
     </div>
+    </div>
+</div>
+
 </body>
 </html>
