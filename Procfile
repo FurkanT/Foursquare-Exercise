@@ -1,0 +1,1 @@
+web: gunicorn Exercise.wsgi --log-file -
