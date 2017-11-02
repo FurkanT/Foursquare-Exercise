@@ -10,12 +10,12 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
-    'mail-to-non-visitor-users': {
-        'task': 'foursquare.tasks.mail_to_non_visitor_users',
+    'send_mail_to_non_visitor_users': {
+        'task': 'foursquare.tasks.send_mail_to_non_visitor_users',
         'schedule': crontab(),  # change to `crontab(minute=0, hour=0)` if you want it to run daily at midnight
     },
-    'mail_to_user_before_birthday': {
-        'task': 'foursquare.tasks.mail_to_user_before_birthday',
+    'send_mail_to_user_before_birthday': {
+        'task': 'foursquare.tasks.send_mail_to_user_before_birthday',
         'schedule': crontab(),
     }
 }

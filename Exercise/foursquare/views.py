@@ -124,7 +124,7 @@ def search(request):
         'current_search': current_search,
         'total_venue_count': total_results,
         'user_searches': user_searches,
-        'user.profile.avatar': get_user_profile(request.user)
+        'user.profile.avatar': get_user_avatar(request.user)
     }
     return render(request, 'foursquare/maintemp.html', context)
 
@@ -144,8 +144,9 @@ def change_email(request):
             raise forms.ValidationError('This email address is already in use.')
         else:
             messages.warning(request, 'Please try again.')
+            form = ChangeEmailForm()
             print("mail form is not valid")
-            return render(request, 'foursquare/emailchangepage.html', {'messages': messages.get_messages(request)})
+            return render(request, 'foursquare/emailchangepage.html', {'messages': messages.get_messages(request), 'form': form})
     else:
         form = ChangeEmailForm()
         return render(request, 'foursquare/emailchangepage.html', {'form': form})
@@ -272,7 +273,7 @@ def get_response(food, location, offset):
     return resp
 
 
-def get_user_profile(user):
+def get_user_avatar(user):
     if user.is_anonymous():
         return None
     return user.profile.avatar

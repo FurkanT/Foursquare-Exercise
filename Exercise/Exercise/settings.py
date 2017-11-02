@@ -101,18 +101,21 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 SECRET_KEY = 'dgh=4tag&w3*b!xklf0y#8yif9#wf+c3zfu8wvw_9ud8my6xdj'
 #SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG',default=False, cast=bool)
-DATABASES = { 'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fs_prod',
-        'USER': 'u_fs',
-        'PASSWORD': '123456',
-        'HOST': 'localhost',
-        'PORT': '',
+DEBUG = True
+DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'fs_prod',
+    #     'USER': 'u_fs',
+    #     'PASSWORD': '123456',
+    #     'HOST': 'localhost',
+    #     'PORT': '',
+    # }
+    'default': {
+        #   dj_database_url.config(default=config('DATABASE_URL'))
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
-    #'default': dj_database_url.config(default=config('DATABASE_URL'))    
-    #'ENGINE': 'django.db.backends.sqlite3',
-    #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 }
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
